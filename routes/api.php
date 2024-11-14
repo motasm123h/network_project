@@ -41,12 +41,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::post('addFile/{group_id}', [FilesController::class, 'addFile']);
     Route::post('deleteFile/{file_id}', [FilesController::class, 'deleteFile']);
+    Route::get('getfiles/{group_id}', [FilesController::class, 'getFiles']);
+    Route::get('DownloadFile/{file_id}', [FilesController::class, 'DownloadFile']);
+
+
+
     Route::post('lockFile', [FilesOptController::class, 'lockFile']);
     Route::post('unlockFile', [FilesOptController::class, 'unlockFile']);
     Route::post('getLockedFilesByUser', [FilesOptController::class, 'getLockedFilesByUser']);
 
     //
-    Route::get('getfiles/{group_id}', [FilesController::class, 'getFiles']);
 
 
 
@@ -55,6 +59,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::post('makeBackUpFile/{file_id}/{group_id}', [BackUpController::class, 'makeBackUpFile']);
 });
+Route::post('getdd', [FilesExportController::class, 'getdd']);
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);

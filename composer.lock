@@ -4,8 +4,55 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6eb620bc7442d214d0ed8bb5a632d070",
+    "content-hash": "81c7fbc8ea0e097ac7f7bef42659a402",
     "packages": [
+        {
+            "name": "baraja-core/simple-php-diff",
+            "version": "v1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/baraja-core/simple-php-diff.git",
+                "reference": "eb0c420dbfacefcccacb1c7cbd468f610583ea12"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/baraja-core/simple-php-diff/zipball/eb0c420dbfacefcccacb1c7cbd468f610583ea12",
+                "reference": "eb0c420dbfacefcccacb1c7cbd468f610583ea12",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan": "^1.0",
+                "phpstan/phpstan-deprecation-rules": "^1.0",
+                "phpstan/phpstan-nette": "^1.0",
+                "phpstan/phpstan-strict-rules": "^1.0",
+                "roave/security-advisories": "dev-master",
+                "spaze/phpstan-disallowed-calls": "^2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Jan Barášek",
+                    "homepage": "https://php.baraja.cz"
+                }
+            ],
+            "description": "Find the quick difference between two text files in PHP.",
+            "homepage": "https://github.com/baraja-core/simple-php-diff",
+            "support": {
+                "issues": "https://github.com/baraja-core/simple-php-diff/issues",
+                "source": "https://github.com/baraja-core/simple-php-diff/tree/v1.0.3"
+            },
+            "time": "2022-05-30T13:55:43+00:00"
+        },
         {
             "name": "barryvdh/laravel-dompdf",
             "version": "v3.0.0",

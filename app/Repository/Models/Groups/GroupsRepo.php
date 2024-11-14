@@ -99,4 +99,12 @@ class GroupsRepo extends Repo implements LeaveGroup, JoinGroup, CreateGroup
         $groups = auth()->user()->groups()->get()->makeHidden('pivot');
         return $this->apiResponse('My Groups ', $groups, 200);
     }
+    public function getGroups()
+    {
+        $userGroupIds = auth()->user()->groups()->pluck('id');
+
+        $groups = Groups::whereNotIn('id', $userGroupIds)->get();
+
+        return $this->apiResponse('Groups not joined by user', $groups, 200);
+    }
 }

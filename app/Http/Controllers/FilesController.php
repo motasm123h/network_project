@@ -31,4 +31,10 @@ class FilesController extends Controller
     {
         return $this->repo->getFiles($group_id);
     }
+    public function DownloadFile(int $file_id)
+    {
+        return $this->repo->DownloadFile($file_id);
+    }
+
+
 }

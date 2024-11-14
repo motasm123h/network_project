@@ -31,7 +31,7 @@ class FilesRepo extends Repo implements AddFile, DeleteFile
 
     public function addFile(FileRequest $request, int $group_id)
     {
-        $data = $request->validated(); 
+        $data = $request->validated();
         try {
             $fileProcess = app(FileProcess::class);
             $fileCredentials = $fileProcess->filetrait($data);
@@ -40,6 +40,8 @@ class FilesRepo extends Repo implements AddFile, DeleteFile
                 'file_path' => $fileCredentials['file_path'],
                 'file_name' => $fileCredentials['file_name'],
                 'group_id' => $group_id,
+                'locked_by' => null,
+                'locked_at' => null,
             ];
 
             $file = parent::create($data);
@@ -68,5 +70,22 @@ class FilesRepo extends Repo implements AddFile, DeleteFile
             return $this->apiResponse('Files for this Group', $files, 200);
         }
         return $this->apiResponse('Files Not Found', null, 200);
+    }
+    public function DownloadFile(int $file_id)
+    {
+        $file = ModelFinder::findOrNull(Files::class, $file_id);
+
+        if ($file && file_exists($file->file_path)) {
+            return response()->download(
+                $file->file_path,
+                $file->file_name,
+                [
+                    'Content-Type' => mime_content_type($file->file_path),
+                    'Content-Disposition' => 'attachment; filename="' . $file->file_name . '"'
+                ]
+            );
+        } else {
+            return $this->apiResponse('File not found', null, 404);
+        }
     }
 }

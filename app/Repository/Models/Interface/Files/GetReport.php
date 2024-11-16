@@ -8,4 +8,5 @@ interface GetReport
 {
     public function getFileReport(int $file_id);
     public function getUserReport(int $file_id);
+    public function getReportByColumn(string $column, int $id, string $relation);
 }

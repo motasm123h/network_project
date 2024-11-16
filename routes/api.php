@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 // use Google\Cloud\Storage\Notification;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\notiController;
 use App\Http\Controllers\FilesController;
 use App\Http\Controllers\GroupController;
@@ -33,33 +33,34 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('leaveGroups/{group_id}', [GroupController::class, 'LeaveGroups']);
     Route::post('startGroups', [GroupController::class, 'StartGroups']);
 
-    //
     Route::get('myGroup', [GroupController::class, 'myGroups']);
+    Route::get('getGroups', [GroupController::class, 'getGroups']);
+    Route::get('getPoepleGroups/{group_id}', [GroupController::class, 'getPoepleGroups']);
 
 
+    Route::middleware(['locking'])->group(function () {
+        Route::post('lockFile', [FilesOptController::class, 'lockFile']);
+        Route::post('unlockFile', [FilesOptController::class, 'unlockFile']);
+    });
 
-
-    Route::post('addFile/{group_id}', [FilesController::class, 'addFile']);
+    Route::post('addFile/{group_id}', [FilesController::class, 'addFile'])->middleware(['fileEx']);
     Route::post('deleteFile/{file_id}', [FilesController::class, 'deleteFile']);
     Route::get('getfiles/{group_id}', [FilesController::class, 'getFiles']);
     Route::get('DownloadFile/{file_id}', [FilesController::class, 'DownloadFile']);
 
 
-
-    Route::post('lockFile', [FilesOptController::class, 'lockFile']);
-    Route::post('unlockFile', [FilesOptController::class, 'unlockFile']);
     Route::post('getLockedFilesByUser', [FilesOptController::class, 'getLockedFilesByUser']);
 
-    //
-
-
-
-    Route::post('exportFileReportToPdf/{file_id}/{type_id}', [FilesExportController::class, 'exportFileReportToPdf']);
-    Route::post('exportFileReportToCsv/{file_id}/{type_id}', [FilesExportController::class, 'exportFileReportToCsv']);
+    Route::get('exportFileReportToPdf/{file_id}/{type_id}', [FilesExportController::class, 'exportFileReportToPdf']);
+    Route::get('exportFileReportToCsv/{file_id}/{type_id}', [FilesExportController::class, 'exportFileReportToCsv']);
 
     Route::post('makeBackUpFile/{file_id}/{group_id}', [BackUpController::class, 'makeBackUpFile']);
-});
-Route::post('getdd', [FilesExportController::class, 'getdd']);
 
+    Route::middleware(['admin'])->group(function () {
+        ////
+    });
+});
+
+Route::post('getdd', [FilesExportController::class, 'getdd']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);

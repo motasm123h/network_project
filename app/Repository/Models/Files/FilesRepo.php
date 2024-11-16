@@ -5,19 +5,15 @@ namespace App\Repository\Models\Files;
 use App\Models\Files;
 use App\Models\Groups;
 use App\Repository\Repo;
-// use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
 use Illuminate\Support\Facades\DB;
-// use App\Models\file_reservation_logs;
-// use App\Http\Controllers\NotiController;
 use App\Classes\HelperFunction\FileProcess;
 use App\Classes\HelperFunction\ModelFinder;
 use App\Classes\FireBaseServices\FirebaseService;
 use App\Http\Requests\FileRequest;
 use App\Repository\Models\Interface\Files\AddFile;
 use App\Repository\Models\Interface\Files\DeleteFile;
-// use App\Repository\Models\Interface\Files\LockUnLockFile;
-// use App\Repository\Models\Notification\NotificationService;
+
 
 class FilesRepo extends Repo implements AddFile, DeleteFile
 {
@@ -71,21 +67,16 @@ class FilesRepo extends Repo implements AddFile, DeleteFile
         }
         return $this->apiResponse('Files Not Found', null, 200);
     }
+
+
     public function DownloadFile(int $file_id)
     {
         $file = ModelFinder::findOrNull(Files::class, $file_id);
 
-        if ($file && file_exists($file->file_path)) {
-            return response()->download(
-                $file->file_path,
-                $file->file_name,
-                [
-                    'Content-Type' => mime_content_type($file->file_path),
-                    'Content-Disposition' => 'attachment; filename="' . $file->file_name . '"'
-                ]
-            );
-        } else {
-            return $this->apiResponse('File not found', null, 404);
+        if (!$file || !isset($file['file_path'])) {
+            return $this->apiResponse('File Not Found', null, 404);
         }
+
+        return response()->download($file['file_path']);
     }
 }

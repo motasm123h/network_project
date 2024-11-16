@@ -19,7 +19,7 @@ class locking
         $file = Files::find($request->route('file_id'));
 
         if ($file && $file->locked_by && $file->locked_by !== auth()->id()) {
-            return response()->json(['message' => 'File is currently locked by another user'], 423); // 423 Locked
+            return response()->json(['message' => 'File is currently locked by another user'], 423);
         }
 
         return $next($request);

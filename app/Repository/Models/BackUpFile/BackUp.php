@@ -26,10 +26,6 @@ class BackUp extends Repo
 
         $data = $request->validated();
 
-        // $request->validate([
-        //     'file' => 'required|file',
-        // ]);
-
         if ($file) {
             $fileProcess = app(FileProcess::class);
 

@@ -24,6 +24,8 @@ class FilesExportController extends Controller
     {
         return $this->repoExportFile->exportFileReportToCsv($id, $type);
     }
+
+    
     function compareFiles($file1, $file2)
     {
         $file1Contents = file_get_contents($file1);

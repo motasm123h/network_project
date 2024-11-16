@@ -6,96 +6,73 @@ use League\Csv\Writer;
 use App\Repository\Repo;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\File;
-use App\Repository\Models\Files\GetReport;
+use App\Classes\FileServices\FileServices;
 use App\Repository\Models\Interface\Files\FileExport as FE;
 
 class FileExport extends Repo implements FE
 {
-    private $getReport;
+    private $FileServices;
     public function __construct()
     {
-        $this->getReport = new GetReport();
+        $this->FileServices = new FileServices();
     }
 
     public function exportFileReportToPdf(int $id, int $type)
     {
-        $logs = null;
-        if ($type == 1) {
-            $logs = $this->getReport->getFileReport($id);
-        } else {
-            $logs = $this->getReport->getUserReport($id);
+        $logs = $this->FileServices->getLogs($id, $type);
+        $html = $this->FileServices->generatepdf($logs, $type);
+
+        if (empty($html)) {
+            return response()->json(['error' => 'HTML content is empty'], 500);
         }
 
-        $html = '<h1>File Lock Report</h1>';
-        if ($type == 1) {
-            $html .= '<h1>Report By File</h1>';
-        } else {
-            $html .= '<h1>Report By User</h1>';
-        }
-        $html .= '<table>';
-        $html .= '<tr><th>User</th><th>Action</th><th>FileName</th><th>Timestamp</th></tr>';
-
-        foreach ($logs as $log) {
-            $html .= '<tr>';
-            $html .= "<td>{$log->user->name}</td>";
-            $html .= "<td>{$log->action}</td>";
-            $html .= "<td>{$log->file->file_name}</td>";
-            $html .= "<td>{$log->created_at}</td>";
-            $html .= '</tr>';
-        }
-
-        $html .= '</table>';
-
-        $filePath = storage_path("app/public/reports/file_report_{$id}.pdf");
-
+        $fileName = "file_report_{$id}.pdf";
+        $filePath = storage_path("app/public/reports/{$fileName}");
         $directoryPath = storage_path('app/public/reports');
+
         if (!File::exists($directoryPath)) {
             File::makeDirectory($directoryPath, 0755, true);
         }
 
-        $pdf = Pdf::loadHTML($html);
-        $pdf->save($filePath);
+        try {
+            $pdf = Pdf::loadHTML($html);
+            $pdf->save($filePath);
 
-        return response()->json(
-            [
-                'file_url' => asset("storage/reports/file_report_{$id}.pdf")
-            ],
-            200
-        );
+            return response()->download($filePath, $fileName, [
+                'Content-Type' => 'application/pdf',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to generate or download PDF'], 500);
+        }
     }
 
     public function exportFileReportToCsv(int $id, int $type)
     {
-        $logs = null;
-        if ($type == 1) {
-            $logs = $this->getReport->getFileReport($id);
-        } else {
-            $logs = $this->getReport->getUserReport($id);
-        }
-        $filePath = storage_path("app/public/reports/file_report_{$id}.csv");
+        $logs = $this->FileServices->getLogs($id, $type);
 
+        $filePath = storage_path("app/public/reports/file_report_{$id}.csv");
         $directoryPath = storage_path('app/public/reports');
+
         if (!File::exists($directoryPath)) {
             File::makeDirectory($directoryPath, 0755, true);
         }
 
-        $csv = Writer::createFromPath($filePath, 'w+');
-        $csv->insertOne(['User', 'Action', 'FileName', 'Timestamp']);
+        try {
+            $csv = Writer::createFromPath($filePath, 'w+');
+            $csv->insertOne(['User', 'Action', 'FileName', 'Timestamp']);
 
-        foreach ($logs as $log) {
-            $csv->insertOne([
-                $log->user->name,
-                $log->action,
-                $log->file->file_name,
-                $log->created_at->format('Y-m-d H:i:s'),
-            ]);
+            foreach ($logs as $log) {
+                $csv->insertOne([
+                    $log->user->name,
+                    $log->action,
+                    $log->file->file_name,
+                    $log->created_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            return response()->download($filePath);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to generate or download CSV', 'message' => $e->getMessage()], 500);
         }
-
-        return response()->json(
-            [
-                'file_url' => asset("storage/reports/file_report_{$id}.csv")
-            ],
-            200
-        );
     }
 }

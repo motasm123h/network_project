@@ -23,12 +23,13 @@ class Repo implements IBase
 
     public function create(array $request): Response
     {
+        // throw exception();
         $createdUser = $this->model->create($request);
 
         if (!$createdUser) {
             return $this->apiResponse('Failed to create', null, false);
         }
-        return $this->apiResponse('Success', $createdUser,200);
+        return $this->apiResponse('Success', $createdUser, 200);
     }
 
     public function update(array $request, int $id): Response

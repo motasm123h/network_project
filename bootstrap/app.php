@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\fileException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,8 +18,16 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\CorsMiddleware::class,
 
+
+        ]);
+        $middleware->alias([
+            'fileEx' => \App\Exceptions\fileException::class,
+            'locking' => \App\Http\Middleware\locking::class,
+            'admin' => \App\Http\Middleware\adminMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // $exceptions->report(function (fileException $e) {
+        //     return $e->getMessage();
+        // });
     })->create();

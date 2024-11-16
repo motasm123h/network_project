@@ -16,19 +16,22 @@ class GetReport extends Repo implements GR
         parent::__construct(Files::class);
     }
 
-    public function getFileReport(int $fileId)
+
+    public function getReportByColumn(string $column, int $id, string $relation)
     {
-        return file_reservation_logs::where('file_id', $fileId)
-            ->with('user')
+        return file_reservation_logs::where($column, $id)
+            ->with($relation)
             ->orderBy('created_at', 'desc')
             ->get();
     }
 
+    public function getFileReport(int $fileId)
+    {
+        return $this->getReportByColumn('file_id', $fileId, 'user');
+    }
+
     public function getUserReport(int $userId)
     {
-        return file_reservation_logs::where('user_id', $userId)
-            ->with('file')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        return $this->getReportByColumn('user_id', $userId, 'file');
     }
 }

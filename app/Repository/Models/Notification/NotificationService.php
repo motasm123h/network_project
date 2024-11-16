@@ -21,7 +21,7 @@ class NotificationService
             'message' => $request['message'],
         ];
 
-        // $token = "c_qKXTT2leRU-8ILiWSI5-:APA91bHe1PawdoF1HUzMaNtfo0abzhX2692II4esbmyZ-Qz5bLgpRF7s3Ajrc5D_0Ct2bKzBIq4YtRVHwN-e8vCL7CkODRNhiLl_8oGPzUNbqRch_fnpdL0";
+        $token = auth()->user()->FCT;
         $result = $this->firebaseService->sendNotificationTo($token, $attributes['name'], $attributes['message']);
         if ($result['success']) {
             return ['status' => 'success', 'message' => 'Notification sent successfully', 'res' => $result];

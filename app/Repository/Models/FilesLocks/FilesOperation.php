@@ -47,13 +47,13 @@ class FilesOperation extends Repo implements LockUnLockFile
                 foreach ($file_ids as $file_id) {
                     $file = Files::where('id', $file_id)->lockForUpdate()->first();
 
-                    $file->locked_by = auth()->id();
+                    $file->locked_by = auth()->user()->id;
                     $file->locked_at = now();
                     $file->save();
 
                     parent::create([
                         'file_id' => $file->id,
-                        'user_id' => auth()->id(),
+                        'user_id' => auth()->user()->id,
                         'action' => 'lock',
                     ]);
 
@@ -62,18 +62,8 @@ class FilesOperation extends Repo implements LockUnLockFile
             });
 
             if (empty($errors)) {
-                $group = Files::where('id', $file_ids[0])->select('group_id')->first();
-                $users = Groups::where('id', $group->group_id)->first();
-
-                $data = $users->users()->select('users.id', 'users.name')->get()->makeHidden('pivot');
-                $otherController = new NotificationService($this->notificationService);
-                $atter = [
-                    "message" => 'some file are lock',
-                ];
-                foreach ($data as $d) {
-                    $atter['name'] = $d['name'];
-                    $otherController->send($atter);
-                }
+                $data = $this->notificationService->getUserToNotifi($file_ids[0]);
+                $this->notificationService->sendNotifiToUser($data, 'some file are lock');
                 return $this->apiResponse('All files locked successfully', ['locked_files' => $lockedFiles], 200);
             } else {
                 return $this->apiResponse('Could not lock files because some are already locked or do not exist.', [
@@ -100,7 +90,7 @@ class FilesOperation extends Repo implements LockUnLockFile
                         return;
                     }
 
-                    if ($file->locked_by !== auth()->id()) {
+                    if ($file->locked_by !== auth()->user()->id) {
                         $errors[] = "You are not authorized to unlock file with ID {$file_id}.";
                         return;
                     }
@@ -115,7 +105,7 @@ class FilesOperation extends Repo implements LockUnLockFile
 
                     file_reservation_logs::create([
                         'file_id' => $file->id,
-                        'user_id' => auth()->id(),
+                        'user_id' => auth()->user()->id,
                         'action' => 'unlock',
                     ]);
 
@@ -124,18 +114,21 @@ class FilesOperation extends Repo implements LockUnLockFile
             });
 
             if (empty($errors)) {
-                $group = Files::where('id', $file_ids[0])->select('group_id')->first();
-                $users = Groups::where('id', $group->group_id)->first();
+                // $group = Files::where('id', $file_ids[0])->select('group_id')->first();
+                // $users = Groups::where('id', $group->group_id)->first();
 
-                $data = $users->users()->select('users.id', 'users.name')->get()->makeHidden('pivot');
-                $otherController = new NotificationService($this->notificationService);
-                $atter = [
-                    "message" => 'some file are unlock',
-                ];
-                foreach ($data as $d) {
-                    $atter['name'] = $d['name'];
-                    $otherController->send($atter);
-                }
+                // $data = $users->users()->select('users.id', 'users.name')->get()->makeHidden('pivot');
+                // $otherController = new NotificationService($this->notificationService);
+                // $atter = [
+                //     "message" => 'some file are unlock',
+                // ];
+                // foreach ($data as $d) {
+                //     $atter['name'] = $d['name'];
+                //     $otherController->send($atter);
+                // }
+
+                $data = $this->notificationService->getUserToNotifi($file_ids[0]);
+                $this->notificationService->sendNotifiToUser($data, 'some file are unlock');
                 return $this->apiResponse('All files unlocked successfully', ['unlocked_files' => $unlockedFiles], 200);
             } else {
                 return $this->apiResponse('Could not unlock files due to authorization errors or missing files.', [

@@ -14,8 +14,8 @@ class BackUpController extends Controller
         $this->repo = new BackUp();
     }
 
-    public function makeBackUpFile(FileRequest $request, int $id, int $group_id)
+    public function makeBackUpFile(FileRequest $request, int $id)
     {
-        return $this->repo->makeBackUpFile($request, $id, $group_id);
+        return $this->repo->makeBackUpFile($request, $id);
     }
 }

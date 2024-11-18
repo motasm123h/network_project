@@ -30,7 +30,6 @@ class UpdateFileProcess implements ShouldQueue
         if (!$file) {
             throw new \Exception("File not found");
         }
-        // dd($file->file_path);
 
         if (md5_file($file->file_path) !== md5_file($this->fileData['file_path'])) {
             $fileProcess = app(FileProcess::class);
@@ -41,15 +40,17 @@ class UpdateFileProcess implements ShouldQueue
                 'editor_name' => auth()->user()->name,
             ]);
 
-            $res = $file->update([
-                'file_path' => $this->fileData['file_path'],
+            $r  'file_path' => $this->fileData['file_path'],
                 'file_name' => $this->fileData['file_name'],
-            ]);
-            dd($this->fileData['file_path'], "   ", $res, "   ", $file['file_path']);
+            ]);es = $file->update([
+              
+            // dd($this->fileData['file_path'], "   ", $res, "   ", $file['file_path']);
+            echo "not here";
         } else {
             if (File::exists($this->fileData['file_path'])) {
                 File::delete($this->fileData['file_path']);
             }
+            echo "here";
         }
     }
 }

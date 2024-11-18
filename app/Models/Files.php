@@ -17,6 +17,7 @@ class Files extends Model
         'group_id',
         'locked_by',
         'locked_at',
+        'hash',
     ];
 
     public function group()
@@ -34,7 +35,8 @@ class Files extends Model
         return $this->hasMany(file_reservation_logs::class);
     }
 
-    public function BackUp(){
+    public function BackUp()
+    {
         return $this->hasMany(FilesBackUp::class);
     }
 }

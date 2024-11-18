@@ -2,6 +2,7 @@
 
 namespace App\Repository\Models\Files;
 
+use App\Classes\FileServices\FileServices;
 use App\Models\Files;
 use App\Models\Groups;
 use App\Repository\Repo;
@@ -19,9 +20,11 @@ class FilesRepo extends Repo implements AddFile, DeleteFile
 {
     use ResponseTrait;
     protected $notificationService;
+    private $fileservices;
     public function __construct()
     {
         $this->notificationService = new FirebaseService();
+        $this->fileservices = new FileServices();
         parent::__construct(Files::class);
     }
 
@@ -31,7 +34,6 @@ class FilesRepo extends Repo implements AddFile, DeleteFile
         try {
             $fileProcess = app(FileProcess::class);
             $fileCredentials = $fileProcess->filetrait($data);
-
             $data = [
                 'file_path' => $fileCredentials['file_path'],
                 'file_name' => $fileCredentials['file_name'],
@@ -40,8 +42,9 @@ class FilesRepo extends Repo implements AddFile, DeleteFile
                 'locked_at' => null,
             ];
 
-            $file = parent::create($data);
-
+            $file = Files::create($data);
+            $hash = $this->fileservices->getHash($file->file_path);
+            $file['hash'] = $hash;
             return $this->apiResponse('File added successfully', $file, 200);
         } catch (\Exception $e) {
             return $this->apiResponse($e->getMessage(), null, 400);

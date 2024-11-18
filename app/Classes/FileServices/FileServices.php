@@ -2,6 +2,7 @@
 
 namespace App\Classes\FileServices;
 
+use App\Models\Files;
 use App\Repository\Models\Files\GetReport;
 use App\Traits\ResponseTrait;
 
@@ -48,5 +49,11 @@ class FileServices
         }
 
         return $logs;
+    }
+
+    public function getHash(string $file)
+    {
+        $hash = md5_file($file);
+        return $hash;
     }
 }

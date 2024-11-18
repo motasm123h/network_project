@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Models\Files;
+use App\Models\Invitation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Groups extends Model
 {
-    
+
     use HasFactory;
     protected $fillable = [
         'name',
@@ -26,9 +27,15 @@ class Groups extends Model
     {
         return $this->users()->wherePivot('is_admin', 1);
     }
-    
+
     public function files()
     {
         return $this->hasMany(Files::class);
     }
+    public function invitations()
+    {
+        return $this->hasMany(Invitation::class);
+    }
+
+    
 }

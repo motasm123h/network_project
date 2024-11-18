@@ -10,6 +10,7 @@ use App\Http\Controllers\BackUpController;
 use App\Http\Controllers\FilesOptController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\FilesExportController;
+use App\Http\Controllers\InvitationController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -48,13 +49,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('getfiles/{group_id}', [FilesController::class, 'getFiles']);
     Route::get('DownloadFile/{file_id}', [FilesController::class, 'DownloadFile']);
 
+    //
+    // Route::post('/invitations/send', [GroupController::class, 'sendInvitation']);
+    Route::post('/invitations/send', [InvitationController::class, 'sendInvitation']);
+    Route::post('/invitations/respond/{id}', [GroupController::class, 'respondToInvitation']);
+
 
     Route::post('getLockedFilesByUser', [FilesOptController::class, 'getLockedFilesByUser']);
 
     Route::get('exportFileReportToPdf/{file_id}/{type_id}', [FilesExportController::class, 'exportFileReportToPdf']);
     Route::get('exportFileReportToCsv/{file_id}/{type_id}', [FilesExportController::class, 'exportFileReportToCsv']);
 
-    Route::post('makeBackUpFile/{file_id}/{group_id}', [BackUpController::class, 'makeBackUpFile']);
+    Route::post('makeBackUpFile/{file_id}', [BackUpController::class, 'makeBackUpFile']);
+
+    //
+    Route::get('/groups/{id}/users-not-in', [GroupController::class, 'getUsersNotInGroup']);
+    Route::get('sentInvitations', [GroupController::class, 'sentInvitations']);
+    Route::get('receivedInvitations', [GroupController::class, 'receivedInvitations']);
+    Route::post('deleteInvitations/{invID}', [GroupController::class, 'deleteInvitations']);
+
 
     Route::middleware(['admin'])->group(function () {
         ////

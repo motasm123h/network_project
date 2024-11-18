@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\file_reservation_logs;
+use App\Models\Invitation;
 
 class User extends Authenticatable
 {
@@ -59,7 +60,7 @@ class User extends Authenticatable
     public function isSuperAdminOfGroup($groupId)
     {
         return $this->groups()
-            ->wherePivot('group_id', $groupId)
+            ->wherePivot('groups_id', $groupId)
             ->wherePivot('is_admin', 1)
             ->exists();
     }
@@ -67,5 +68,43 @@ class User extends Authenticatable
     public function fileReservationLogs()
     {
         return $this->hasMany(file_reservation_logs::class);
+    }
+
+    public function sentInvitations()
+    {
+        return $this->hasMany(Invitation::class, 'sender_id');
+    }
+
+    public function receivedInvitations()
+    {
+        return $this->hasMany(Invitation::class, 'receiver_id');
+    }
+
+    public function invitations()
+    {
+        return $this->hasMany(Invitation::class, 'receiver_id');
+    }
+
+    public static function usersNotInGroupOrInvited($groupId)
+    {
+        return self::whereDoesntHave('groups', function ($query) use ($groupId) {
+            $query->where('groups.id', $groupId);
+        })->whereDoesntHave('invitations', function ($query) use ($groupId) {
+            $query->where('group_id', $groupId);
+        })->get();
+    }
+    public function receivedInvitationFormat($status)
+    {
+        return $this->receivedInvitations()
+            ->where('status', $status)
+            ->with(['group:id,name', 'sender:id,name,email'])
+            ->get();
+    }
+    public function sentInvitationsFormat($status)
+    {
+        return $this->sentInvitations()
+            ->where('status', $status)
+            ->with(['group:id,name', 'receiver:id,name,email'])
+            ->get();
     }
 }

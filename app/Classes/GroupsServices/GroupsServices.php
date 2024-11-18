@@ -58,4 +58,9 @@ class GroupsServices
 
         return Groups::whereNotIn('id', $userGroupIds)->get();
     }
+
+
+    public function isAdmmin(){
+        
+    }
 }

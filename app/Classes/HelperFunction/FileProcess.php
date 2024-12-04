@@ -39,7 +39,6 @@ class FileProcess
         switch ($fileType) {
             case 'pdf':
                 $sourcePath = public_path('pdf/' . $fileName);
-                // dd($sourcePath);
                 break;
             case 'docx':
                 $sourcePath = public_path('docx/' . $fileName);
@@ -60,7 +59,7 @@ class FileProcess
         if (file_exists($sourcePath)) {
             rename($sourcePath, $destinationPath);
         } else {
-            dd($destinationPath);
+            // dd($destinationPath);
             throw new \Exception("File does not exist at $sourcePath");
         }
 

@@ -8,7 +8,7 @@ use App\Models\file_reservation_logs;
 use App\Repository\Models\Interface\Files\GetReport as GR;
 
 
-class GetReport extends Repo implements GR
+class GetReportServices extends Repo implements GR
 {
 
     public function __construct()

@@ -3,8 +3,11 @@
 namespace App\Classes\FileServices;
 
 use App\Models\Files;
-use App\Repository\Models\Files\GetReport;
+use App\Models\Groups;
 use App\Traits\ResponseTrait;
+use Illuminate\Support\Facades\DB;
+use App\Classes\HelperFunction\ModelFinder;
+use App\Repository\Models\Files\GetReportServices;
 
 class FileServices
 {
@@ -12,7 +15,7 @@ class FileServices
     private $getReport;
     public function __construct()
     {
-        $this->getReport = new GetReport();
+        $this->getReport = new GetReportServices();
     }
     public function generatepdf($logs, int $type)
     {
@@ -55,5 +58,21 @@ class FileServices
     {
         $hash = md5_file($file);
         return $hash;
+    }
+
+    public function getFile(int $group_id, $status)
+    {
+        $group = ModelFinder::findOrNull(Groups::class, $group_id);
+
+        if ($group) {
+            $files = DB::table('files')
+                ->where('group_id', $group_id)
+                ->whereIn('status', $status)
+                ->get();
+
+            return $files;
+        }
+
+        return null;
     }
 }

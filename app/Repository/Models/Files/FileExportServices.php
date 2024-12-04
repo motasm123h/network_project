@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\File;
 use App\Classes\FileServices\FileServices;
 use App\Repository\Models\Interface\Files\FileExport as FE;
 
-class FileExport extends Repo implements FE
+class FileExportServices extends Repo implements FE
 {
     private $FileServices;
     public function __construct()

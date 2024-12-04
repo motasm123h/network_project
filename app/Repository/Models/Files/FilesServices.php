@@ -2,21 +2,23 @@
 
 namespace App\Repository\Models\Files;
 
-use App\Classes\FileServices\FileServices;
 use App\Models\Files;
 use App\Models\Groups;
 use App\Repository\Repo;
+use App\Models\FilesBackUp;
+use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
+use App\Http\Requests\FileRequest;
 use Illuminate\Support\Facades\DB;
+use App\Classes\FileServices\FileServices;
 use App\Classes\HelperFunction\FileProcess;
+// use App\Repository\Models\Files\FilesServices;
 use App\Classes\HelperFunction\ModelFinder;
 use App\Classes\FireBaseServices\FirebaseService;
-use App\Http\Requests\FileRequest;
 use App\Repository\Models\Interface\Files\AddFile;
 use App\Repository\Models\Interface\Files\DeleteFile;
 
-
-class FilesRepo extends Repo implements AddFile, DeleteFile
+class FilesServices extends Repo implements AddFile, DeleteFile
 {
     use ResponseTrait;
     protected $notificationService;
@@ -41,6 +43,11 @@ class FilesRepo extends Repo implements AddFile, DeleteFile
                 'locked_by' => null,
                 'locked_at' => null,
             ];
+            if (auth()->user()->isSuperAdminOfGroup($group_id)) {
+                $data['status'] = 'approved';
+            } else {
+                $data['status'] = 'pending';
+            }
 
             $file = Files::create($data);
             $hash = $this->fileservices->getHash($file->file_path);
@@ -63,11 +70,23 @@ class FilesRepo extends Repo implements AddFile, DeleteFile
 
     public function getFiles(int $group_id)
     {
-        $group = ModelFinder::findOrNull(Groups::class, $group_id);
-        if ($group) {
-            $files = DB::table('files')->where('group_id', $group_id)->get();
+
+        $files = $this->fileservices->getFile($group_id, ['pending', 'approved']);
+        if ($files) {
             return $this->apiResponse('Files for this Group', $files, 200);
         }
+
+        return $this->apiResponse('Files Not Found', null, 200);
+        return $this->apiResponse('Files Not Found', null, 200);
+    }
+
+    public function getFilesForCheck(int $group_id)
+    {
+        $files = $this->fileservices->getFile($group_id, ['pending']);
+        if ($files) {
+            return $this->apiResponse('Files for this Group', $files, 200);
+        }
+
         return $this->apiResponse('Files Not Found', null, 200);
     }
 
@@ -75,11 +94,32 @@ class FilesRepo extends Repo implements AddFile, DeleteFile
     public function DownloadFile(int $file_id)
     {
         $file = ModelFinder::findOrNull(Files::class, $file_id);
+        // // $fileb = ModelFinder::findOrNull(FilesBackUp::class, $file_id);
+        // if (!$file || !isset($file['path'])) {
+        //     return $this->apiResponse('File Not Found', null, 404);
+        // } else {
 
+        //     return response()->download($file['file_path']);
+        // }
         if (!$file || !isset($file['file_path'])) {
             return $this->apiResponse('File Not Found', null, 404);
         }
 
         return response()->download($file['file_path']);
+    }
+
+    public function fileRespond(Request $request, int $file_id)
+    {
+        $file = ModelFinder::findOrNull(Files::class, $file_id);
+        $atter = $request->validate([
+            'status' => ['required', 'in:approved,rejected'],
+        ]);
+        if (!$file || !isset($file['file_path'])) {
+            return $this->apiResponse('File Not Found', null, 404);
+        }
+        $file->update([
+            'status' => $atter['status'],
+        ]);
+        return $this->apiResponse('File Edit', $file, 200);
     }
 }

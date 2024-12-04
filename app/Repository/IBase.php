@@ -13,4 +13,5 @@ interface IBase
     public function create(array $request): Response;
     public function update(array $request, int $id): Response;
     public function delete(int $id): bool;
+    // public function gg();
 }

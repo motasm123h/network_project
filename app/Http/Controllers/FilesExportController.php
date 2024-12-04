@@ -3,29 +3,30 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Repository\Models\Files\FileExport;
+use App\Repository\Models\Files\FileExportServices;
 
 class FilesExportController extends Controller
 {
-    private $repoExportFile;
+    private $serviceExportFile;
     public function __construct()
     {
         return [
-            $this->repoExportFile = new FileExport(),
+            $this->serviceExportFile = new FileExportServices(),
         ];
     }
 
     public function exportFileReportToPdf(int $id, int $type)
     {
-        return $this->repoExportFile->exportFileReportToPdf($id, $type);
+        // dd("here");
+        return $this->serviceExportFile->exportFileReportToPdf($id, $type);
     }
 
     public function exportFileReportToCsv(int $id, int $type)
     {
-        return $this->repoExportFile->exportFileReportToCsv($id, $type);
+        return $this->serviceExportFile->exportFileReportToCsv($id, $type);
     }
 
-    
+
     function compareFiles($file1, $file2)
     {
         $file1Contents = file_get_contents($file1);

@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'fileEx' => \App\Exceptions\fileException::class,
             'locking' => \App\Http\Middleware\locking::class,
             'admin' => \App\Http\Middleware\adminMiddleware::class,
+            'aspect' => \App\Http\Middleware\AspectMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

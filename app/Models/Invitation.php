@@ -30,7 +30,7 @@ class Invitation extends Model
     {
         return self::where('group_id', $group_id)
             ->where('receiver_id', $receiver_id)
-            ->where('status', $status)
+            ->whereIn('status', $status)
             ->first();
     }
 }

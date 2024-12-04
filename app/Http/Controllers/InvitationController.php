@@ -2,51 +2,46 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Requests\InvitationRequest;
 use App\Http\Requests\InvitationResRequest;
-use App\Repository\Models\Invitation\InvitationRepo;
+use App\Repository\Models\Invitation\InvitationService;
 
 class InvitationController extends Controller
 {
-    private $repo;
+    private $service;
     public function __construct()
     {
-        $this->repo = new InvitationRepo(auth()->user());
+        $this->service = new InvitationService(auth()->user());
     }
     public function sendInvitation(InvitationRequest $request)
     {
-        return $this->repo->sendInvitation($request);
+        return $this->service->sendInvitation($request);
     }
 
 
     public function respondToInvitation(InvitationResRequest $request, $id)
     {
-        return $this->repo->respondToInvitation($request, $id);
+        return $this->service->respondToInvitation($request, $id);
     }
 
 
     public function getUsersNotInGroup($groupId)
     {
-        return $this->repo->getUsersNotInGroup($groupId);
+        return $this->service->getUsersNotInGroup($groupId);
     }
 
     public function receivedInvitations()
     {
-        return $this->repo->receivedInvitations();
+        return $this->service->receivedInvitations();
     }
 
     public function sentInvitations()
     {
-        return $this->repo->sentInvitations();
+        return $this->service->sentInvitations();
     }
 
-    // public function deleteInvitations(int $invitationID)
-    // {
-    //     $Invitation = Invitation::findOrFail($invitationID);
-    //     return response()->json([
-    //         'success' => 'Invitations Delete',
-    //         'data' => $Invitation->delete(),
-    //     ]);
-    // }
+    public function deleteInvitations(int $invitationID)
+    {
+        return $this->service->deleteInvitations($invitationID);
+    }
 }

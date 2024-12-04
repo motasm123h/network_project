@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string("file_path");
             $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
             $table->string('hash')->nullable();
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->foreignId('locked_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('locked_at')->nullable();
             $table->timestamps();

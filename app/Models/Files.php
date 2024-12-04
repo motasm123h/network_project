@@ -18,6 +18,7 @@ class Files extends Model
         'locked_by',
         'locked_at',
         'hash',
+        'status',
     ];
 
     public function group()

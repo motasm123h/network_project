@@ -9,17 +9,20 @@ use App\Traits\ResponseTrait;
 use Illuminate\Support\Facades\DB;
 use App\Models\file_reservation_logs;
 use App\Classes\FireBaseServices\FirebaseService;
+use App\Repository\Models\BackUpFile\BackUpService;
 use App\Repository\Models\Interface\Files\LockUnLockFile;
 use App\Repository\Models\Notification\NotificationService;
 
 
-class FilesOperation extends Repo implements LockUnLockFile
+class FilesOperationService extends Repo implements LockUnLockFile
 {
     use ResponseTrait;
     protected $notificationService;
+    protected $backupService;
     public function __construct()
     {
         $this->notificationService = new FirebaseService();
+        $this->backupService = new BackUpService();
         parent::__construct(file_reservation_logs::class);
     }
 
@@ -114,18 +117,6 @@ class FilesOperation extends Repo implements LockUnLockFile
             });
 
             if (empty($errors)) {
-                // $group = Files::where('id', $file_ids[0])->select('group_id')->first();
-                // $users = Groups::where('id', $group->group_id)->first();
-
-                // $data = $users->users()->select('users.id', 'users.name')->get()->makeHidden('pivot');
-                // $otherController = new NotificationService($this->notificationService);
-                // $atter = [
-                //     "message" => 'some file are unlock',
-                // ];
-                // foreach ($data as $d) {
-                //     $atter['name'] = $d['name'];
-                //     $otherController->send($atter);
-                // }
 
                 $data = $this->notificationService->getUserToNotifi($file_ids[0]);
                 $this->notificationService->sendNotifiToUser($data, 'some file are unlock');
@@ -146,5 +137,53 @@ class FilesOperation extends Repo implements LockUnLockFile
         $lockedFiles = Files::where('locked_by', auth()->id())->get();
 
         return $this->apiResponse('Locked files retrieved successfully', $lockedFiles, 200);
+    }
+
+
+    public function checkout($request, int $file_id)
+    {
+        $lockedFiles = [];
+        $errors = [];
+
+        try {
+            DB::transaction(function () use ($file_id, &$lockedFiles, &$errors) {
+                $file = Files::where('id', $file_id)->lockForUpdate()->first();
+                if (!$file) {
+                    $errors[] = "File with ID {$file_id} does not exist.";
+                    return;
+                }
+                if ($file->locked_by !== auth()->user()->id) {
+                    $errors[] = "You are not authorized to unlock file with ID {$file_id}.";
+                    return;
+                }
+
+                $file = Files::where('id', $file_id)->lockForUpdate()->first();
+                $file->locked_by = null;
+                $file->locked_at = null;
+                $file->save();
+
+                parent::create([
+                    'file_id' => $file->id,
+                    'user_id' => auth()->user()->id,
+                    'action' => 'unlock',
+                ]);
+
+                $lockedFiles[] = $file_id;
+            });
+
+            if (empty($errors)) {
+                $data = $this->notificationService->getUserToNotifi($file_id);
+                $this->notificationService->sendNotifiToUser($data, 'some file are unlock');
+
+                $res = $this->backupService->makeBackUpFile($request, $file_id);
+                return $this->apiResponse('All files unlocked successfully', $res, 200);
+            } else {
+                return $this->apiResponse('Could not unlock files because some are already unlock or do not exist.', [
+                    'errors' => $errors
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            return $this->apiResponse($e->getMessage(), null, 400);
+        }
     }
 }

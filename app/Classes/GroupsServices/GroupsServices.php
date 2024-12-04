@@ -22,12 +22,21 @@ class GroupsServices
             if (!$group->users()->where('user_id', $userId)->exists()) {
                 return ['message' => 'User is not in the group', 'code' => 409];
             }
+
+            $superAdmin = $group->superAdmin()->first();
+            if ($superAdmin && $superAdmin->id == $userId) {
+                $group->delete();
+                return ['message' => 'User left the group successfully and the group was deleted', 'code' => 200];
+            }
+
             $group->users()->detach($userId);
             return ['message' => 'User left the group successfully', 'code' => 200];
         }
+
         if ($group->users()->where('user_id', $userId)->exists()) {
             return ['message' => 'User is already in the group', 'code' => 409];
         }
+
         $group->users()->attach($userId);
         return ['message' => 'User joined the group successfully', 'code' => 200];
     }
@@ -53,14 +62,11 @@ class GroupsServices
 
     public function getAvailableGroups()
     {
-        // $userGroupIds = $this->getUserGroups()->pluck('id');
         $userGroupIds = Arr::pluck($this->getUserGroups(), 'id');
 
         return Groups::whereNotIn('id', $userGroupIds)->get();
     }
 
 
-    public function isAdmmin(){
-        
-    }
+    public function isAdmmin() {}
 }

@@ -5,16 +5,12 @@ namespace App\Repository\Models\BackUpFile;
 use App\Models\Files;
 use App\Repository\Repo;
 use App\Models\FilesBackUp;
-use Illuminate\Http\Request;
-use App\Jobs\UpdateFileProcess;
-
 use App\Http\Requests\FileRequest;
-use Illuminate\Support\Facades\File;
 use App\Classes\HelperFunction\FileProcess;
 use App\Classes\HelperFunction\ModelFinder;
 use App\Classes\FileServices\FileServices;
 
-class BackUp extends Repo
+class BackUpService extends Repo
 {
     private $fileService;
     public function __construct()
@@ -48,16 +44,14 @@ class BackUp extends Repo
                     'hash' => $hash,
                 ]);
 
-                return $this->apiResponse("File updated", $file, 200);
+                // return $this->apiResponse("File updated", $file, 200);
+                // dd($file);
+                return  $file;
             } else {
-                return $this->apiResponse("Files are the same", $file, 201);
+                return $file;
             }
         } else {
-            return response()->json(['message' => 'File not found'], 299);
+            return null;
         }
     }
-
-
-
-    
 }

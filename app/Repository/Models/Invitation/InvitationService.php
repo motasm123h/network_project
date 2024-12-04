@@ -10,7 +10,7 @@ use App\Traits\ResponseTrait;
 use App\Http\Requests\InvitationRequest;
 use App\Http\Requests\InvitationResRequest;
 
-class InvitationRepo extends Repo
+class InvitationService extends Repo
 {
     use ResponseTrait;
     private $user;
@@ -18,7 +18,6 @@ class InvitationRepo extends Repo
     public function __construct($user)
     {
         $this->user = $user;
-        // $this->GroupsServices = new GroupsServices($this->user);
         parent::__construct(Invitation::class);
     }
 
@@ -26,7 +25,8 @@ class InvitationRepo extends Repo
     {
         $validated = $request->validated();
         $groupId = $validated['group_id'];
-
+        $group = Groups::where('id', $groupId)->first();
+        echo $groupId;
 
         $isAdmin = $this->user->isSuperAdminOfGroup($validated['group_id']);
 
@@ -34,10 +34,10 @@ class InvitationRepo extends Repo
             return response()->json(['error' => 'You are not authorized to send invitations for this group.'], 403);
         }
 
-        $existingInvitation = Invitation::existingInvitation($validated['group_id'], $validated['receiver_id'], 'pending');
+        $existingInvitation = Invitation::existingInvitation($validated['group_id'], $validated['receiver_id'], ['pending', 'accepted', 'rejected']);
 
-        if ($existingInvitation) {
-            return response()->json(['error' => 'This user has already been invited.'], 400);
+        if ($existingInvitation or $group->users()->where('user_id', $validated['receiver_id'])->exists()) {
+            return response()->json(['error' => 'This user has already been invited OR joined to the Groups.'], 400);
         }
         parent::create([
             'group_id' => $groupId,
@@ -53,14 +53,15 @@ class InvitationRepo extends Repo
         $validated = $request->validated();
 
         $invitation = Invitation::findOrFail($id);
+        $group = Groups::where('id', $invitation['group_id'])->first();
 
         if ($invitation->receiver_id !== $this->user->id) {
             return response()->json(['error' => 'You are not authorized to respond to this invitation.'], 403);
         }
 
         $invitation->update(['status' => $validated['status']]);
-
-        if ($validated['status'] === 'accepted') {
+        if ($validated['status'] === 'accepted' and !$group->users()->where('user_id', $this->user->id)->exists()) {
+            echo "here";
             $invitation->group->users()->attach($invitation->receiver_id);
         }
 
@@ -105,6 +106,14 @@ class InvitationRepo extends Repo
         return response()->json([
             'success' => 'Invitations sent',
             'data' => $sentInvitations,
+        ]);
+    }
+    public function deleteInvitations(int $invitationID)
+    {
+        $Invitation = Invitation::findOrFail($invitationID);
+        return response()->json([
+            'success' => 'Invitations Delete',
+            'data' => $Invitation->delete(),
         ]);
     }
 }

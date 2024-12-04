@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Repository\Models\FilesLocks\FilesOperation;
+use App\Http\Requests\FileRequest;
+use App\Repository\Models\FilesLocks\FilesOperationService;
 
 class FilesOptController extends Controller
 {
-    private $repo;
+    private $service;
     public function __construct()
     {
         return [
-            $this->repo = new FilesOperation(),
+            $this->service = new FilesOperationService(),
         ];
     }
 
@@ -20,7 +21,7 @@ class FilesOptController extends Controller
         $atter = $request->validate([
             'ids' => ['required']
         ]);
-        return $this->repo->lockFiles($atter['ids']);
+        return $this->service->lockFiles($atter['ids']);
     }
 
     public function unlockFile(Request $request)
@@ -28,10 +29,14 @@ class FilesOptController extends Controller
         $atter = $request->validate([
             'ids' => ['required']
         ]);
-        return $this->repo->UnLockFiles($atter['ids']);
+        return $this->service->UnLockFiles($atter['ids']);
     }
     public function getLockedFilesByUser()
     {
-        return $this->repo->getLockedFilesByUser();
+        return $this->service->getLockedFilesByUser();
+    }
+    public function checkout(FileRequest $request, int $file_id)
+    {
+        return $this->service->checkout($request, $file_id);
     }
 }

@@ -23,7 +23,6 @@ class Repo implements IBase
 
     public function create(array $request): Response
     {
-        // throw exception();
         $createdUser = $this->model->create($request);
 
         if (!$createdUser) {

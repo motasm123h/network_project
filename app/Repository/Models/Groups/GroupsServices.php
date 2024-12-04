@@ -2,17 +2,19 @@
 
 namespace App\Repository\Models\Groups;
 
-use App\Classes\GroupsServices\GroupsServices;
 use App\Models\Groups;
 use App\Repository\Repo;
-use Illuminate\Http\Request;
+use App\Models\Invitation;
+// use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
+use Illuminate\Support\Facades\DB;
 use App\Classes\HelperFunction\ModelFinder;
+use App\Classes\GroupsServices\GroupsServices as GS;
 use App\Repository\Models\Interface\Groups\JoinGroup;
 use App\Repository\Models\Interface\Groups\LeaveGroup;
 use App\Repository\Models\Interface\Groups\CreateGroup;
 
-class GroupsRepo extends Repo implements LeaveGroup, JoinGroup, CreateGroup
+class GroupsServices extends Repo implements LeaveGroup, JoinGroup, CreateGroup
 {
     use ResponseTrait;
     private $user;
@@ -20,7 +22,7 @@ class GroupsRepo extends Repo implements LeaveGroup, JoinGroup, CreateGroup
     public function __construct($user)
     {
         $this->user = $user;
-        $this->GroupsServices = new GroupsServices($this->user);
+        $this->GroupsServices = new GS($this->user);
         parent::__construct(Groups::class);
     }
 
@@ -77,7 +79,7 @@ class GroupsRepo extends Repo implements LeaveGroup, JoinGroup, CreateGroup
 
     public function AddOwnerToGroup(int $groupId, int $user)
     {
-        $group = Groups::findOrFail($groupId);
+        $group = ModelFinder::findOrNull(Groups::class, $groupId);
 
         if ($group) {
             $group->users()->attach($user, ['is_admin' => 1]);
@@ -105,7 +107,31 @@ class GroupsRepo extends Repo implements LeaveGroup, JoinGroup, CreateGroup
     }
     public function getPoepleGroups(int $group_id)
     {
-        $group = Groups::findOrFail($group_id);
+        $group = ModelFinder::findOrNull(Groups::class, $group_id);
         return $this->apiResponse('My People ', $group->users()->get()->makeHidden('pivot'), 200);
+    }
+    public function serachPeople($request, $group_id)
+    {
+        $group = Groups::where('id', $group_id)->first();
+        $validatedData = $request->validate([
+            'content' => ['required', 'string'],
+        ]);
+
+        $searchTerm = $validatedData['content'];
+        $data = [];
+        $result = DB::table('users')
+            ->where('name', 'like', '%' . $searchTerm . '%')
+            ->orWhere('email', 'like', '%' . $searchTerm . '%')
+            ->get();
+
+        foreach ($result as $res) {
+            $existingInvitation = Invitation::existingInvitation($group_id, $res->id, ['pending', 'accepted', 'rejected']);
+            if ($group->users()->where('user_id', $res->id)->exists() || !is_null($existingInvitation)) {
+                continue;
+            } else {
+                $data[] = $res;
+            }
+        }
+        return $this->apiResponse('Search results', $data, 200);
     }
 }

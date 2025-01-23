@@ -93,6 +93,7 @@ class User extends Authenticatable
             $query->where('group_id', $groupId);
         })->get();
     }
+
     public function receivedInvitationFormat($status)
     {
         return $this->receivedInvitations()
@@ -100,6 +101,7 @@ class User extends Authenticatable
             ->with(['group:id,name', 'sender:id,name,email'])
             ->get();
     }
+    
     public function sentInvitationsFormat($status)
     {
         return $this->sentInvitations()

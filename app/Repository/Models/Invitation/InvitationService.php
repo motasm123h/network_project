@@ -26,7 +26,7 @@ class InvitationService extends Repo
         $validated = $request->validated();
         $groupId = $validated['group_id'];
         $group = Groups::where('id', $groupId)->first();
-        echo $groupId;
+        // echo $groupId;
 
         $isAdmin = $this->user->isSuperAdminOfGroup($validated['group_id']);
 
@@ -48,6 +48,24 @@ class InvitationService extends Repo
         return response()->json(['success' => 'Invitation sent successfully.']);
     }
 
+    public function sendRequest(Groups $grops){
+        // $grops = Groups::where('id',$group_id)->first();
+        // if(is_null($group)){
+        //     return response()->json([
+        //         'message' => 'Group are not found',
+        //     ],404)
+        // }
+        $receiverID = $grops->superAdmin()->first();
+        // dd($receiverID['id']);
+        parent::create([
+            'group_id' => $grops->id,
+            'sender_id' => $this->user->id,
+            'receiver_id' => $receiverID->id,
+        ]);
+        return response()->json(['success' => 'Invitation sent successfully.']);
+    }
+
+
     public function respondToInvitation(InvitationResRequest $request, $id)
     {
         $validated = $request->validated();
@@ -58,13 +76,20 @@ class InvitationService extends Repo
         if ($invitation->receiver_id !== $this->user->id) {
             return response()->json(['error' => 'You are not authorized to respond to this invitation.'], 403);
         }
+        $receiverID = $group->superAdmin()->first();
 
         $invitation->update(['status' => $validated['status']]);
-        if ($validated['status'] === 'accepted' and !$group->users()->where('user_id', $this->user->id)->exists()) {
-            echo "here";
-            $invitation->group->users()->attach($invitation->receiver_id);
-        }
+        // dd($invitation['receiver_id'] , $receiverID->id);
+        if ($validated['status'] === 'accepted' and ((!$group->users()->where('user_id', $invitation['sender_id'])->exists() and $invitation['receiver_id'] == $receiverID->id) or (!$group->users()->where('user_id', $invitation['receiver_id'])->exists() and $invitation['receiver_id'] !== $receiverID->id) ) ) {
+           
+            if ($invitation['receiver_id'] == $receiverID->id) {
+                $invitation->group->users()->attach($invitation->sender_id);
+            }
+            else{
+                 $invitation->group->users()->attach($invitation->receiver_id);
+            }
 
+        }
         return response()->json(['success' => 'Invitation response recorded.']);
     }
 

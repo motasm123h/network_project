@@ -45,9 +45,7 @@ class GroupsServices extends Repo implements LeaveGroup, JoinGroup, CreateGroup
             return $this->apiResponse('Group not found', statuscode: 404);
         }
         $res = $this->GroupsServices->groupsCheck($group, 1, $this->user->id);
-        // if($res['code'] == 200){
-
-        // }
+        
         return $this->apiResponse($res['message'], statuscode: $res['code']);
     }
 

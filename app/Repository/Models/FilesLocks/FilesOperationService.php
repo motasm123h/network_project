@@ -12,7 +12,8 @@ use App\Classes\FireBaseServices\FirebaseService;
 use App\Repository\Models\BackUpFile\BackUpService;
 use App\Repository\Models\Interface\Files\LockUnLockFile;
 use App\Repository\Models\Notification\NotificationService;
-
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\UnlockFileNotification;
 
 class FilesOperationService extends Repo implements LockUnLockFile
 {
@@ -67,6 +68,13 @@ class FilesOperationService extends Repo implements LockUnLockFile
             if (empty($errors)) {
                 $data = $this->notificationService->getUserToNotifi($file_ids[0]);
                 $this->notificationService->sendNotifiToUser($data, 'some file are lock');
+                // Notify all users in the group
+                $groupUsers = $this->getUsersInGroupByFile($file_ids[0]);
+                $notificationData = [
+                    'file_id' => $file_ids[0],
+                    'message' => 'A file in your group has been locked successfully',
+                ];
+                Notification::send($groupUsers, new UnlockFileNotification($notificationData));
                 return $this->apiResponse('All files locked successfully', ['locked_files' => $lockedFiles], 200);
             } else {
                 return $this->apiResponse('Could not lock files because some are already locked or do not exist.', [
@@ -174,6 +182,14 @@ class FilesOperationService extends Repo implements LockUnLockFile
             if (empty($errors)) {
                 $data = $this->notificationService->getUserToNotifi($file_id);
                 $this->notificationService->sendNotifiToUser($data, 'some file are unlock');
+                
+                // Notify all users in the group
+                $groupUsers = $this->getUsersInGroupByFile($file_id);
+                $notificationData = [
+                    'file_id' => $file_id,
+                    'message' => 'A file in your group has been unlocked successfully',
+                ];
+                Notification::send($groupUsers, new UnlockFileNotification($notificationData));
 
                 $res = $this->backupService->makeBackUpFile($request, $file_id);
                 return $this->apiResponse('All files unlocked successfully', $res, 200);
@@ -185,5 +201,12 @@ class FilesOperationService extends Repo implements LockUnLockFile
         } catch (\Exception $e) {
             return $this->apiResponse($e->getMessage(), null, 400);
         }
+    }
+
+    private function getUsersInGroupByFile(int $file_id)
+    {
+        $file = Files::findOrFail($file_id);
+        $group = $file->group;
+        return $group->users; 
     }
 }

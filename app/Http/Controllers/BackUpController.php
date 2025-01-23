@@ -33,7 +33,7 @@ class BackUpController extends Controller
                 'files_id' => $backup->files_id,
                 'created_at' => $backup->created_at,
                 'updated_at' => $backup->updated_at,
-                'path' => public_path('backUpFile/' . $backup->name)
+                'path' => url('backUpFile/' . $backup->name),
             ];
         });
 

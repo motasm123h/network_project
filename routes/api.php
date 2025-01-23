@@ -11,6 +11,7 @@ use App\Http\Controllers\FilesOptController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\FilesExportController;
 use App\Http\Controllers\InvitationController;
+// use App\Http\Controllers\NotiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -27,7 +28,7 @@ Route::post('sendNotification', [notiController::class, 'send']);
 
 
 Route::middleware(['auth:sanctum', 'aspect'])->group(function () {
-    Route::post('saveFCT', [notiController::class, 'saveFCT']);
+    Route::post('saveFCT', [NotiController::class, 'saveFCT']);
     Route::post('logout', [AuthController::class, 'logout']);
 
     Route::post('joinGroups/{group_id}', [GroupController::class, 'JoinGroups']);
@@ -38,6 +39,8 @@ Route::middleware(['auth:sanctum', 'aspect'])->group(function () {
     Route::get('getGroups', [GroupController::class, 'getGroups']);
     Route::get('getPoepleGroups/{group_id}', [GroupController::class, 'getPoepleGroups']);
 
+    Route::get('getNotifications', [NotiController::class, 'getNotifications']);
+    Route::get('deleteNotification/{id}', [NotiController::class, 'deleteNotification']);
 
     Route::post('serachPeople/{group_id}', [GroupController::class, 'serachPeople']);
 
@@ -81,6 +84,17 @@ Route::middleware(['auth:sanctum', 'aspect'])->group(function () {
     Route::get('deleteInvitations/{invID}', [InvitationController::class, 'deleteInvitations']);
 
 
+
+    Route::get('/backUpFile/{filename}', function ($filename) {
+        $path = public_path('backUpFile/' . $filename);
+
+        if (!file_exists($path)) {
+            abort(404);
+        }
+
+        return response()->file($path);
+    });
+
     Route::middleware(['admin'])->group(function () {
         ////
     });
@@ -89,3 +103,4 @@ Route::middleware(['auth:sanctum', 'aspect'])->group(function () {
 Route::post('getdd', [FilesExportController::class, 'getdd']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
+

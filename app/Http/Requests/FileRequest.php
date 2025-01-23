@@ -22,7 +22,7 @@ class FileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => 'required|file|mimetypes:application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet|max:2048', // Max size: 2MB
+            'file' => 'required|file|mimetypes:application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain|max:2048', // Max size: 2MB
         ];
     }
 }

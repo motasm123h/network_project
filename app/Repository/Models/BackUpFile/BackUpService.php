@@ -18,7 +18,49 @@ class BackUpService extends Repo
         $this->fileService = new FileServices();
         parent::__construct(Files::class);
     }
+    function compareFiles($file1, $file2)
+    {
+        $file1Contents = file_get_contents($file1);
+        $file2Contents = file_get_contents($file2);
 
+        $file1Lines = explode("\n", $file1Contents);
+        $file2Lines = explode("\n", $file2Contents);
+
+        $differences = array();
+
+
+        if (count($file1Lines) > count($file2Lines)) {
+            foreach ($file1Lines as $lineNum => $line) {
+                if (!in_array($line, $file2Lines)) {
+                    $differences[] = array(
+                        'line' => $lineNum + 1,
+                        'type' => 'in this line there are change '
+                    );
+                }
+            }
+        } else if (count($file1Lines) < count($file2Lines)) {
+            foreach ($file2Lines as $lineNum => $line) {
+                if (!in_array($line, $file1Lines)) {
+                    $differences[] = array(
+                        'line' => $lineNum + 1,
+                        'file' => $file1,
+                        'type' => 'in this line there are change '
+                    );
+                }
+            }
+        } else {
+            foreach ($file2Lines as $lineNum => $line) {
+                if (!in_array($line, $file1Lines)) {
+                    $differences[] = array(
+                        'line' => $lineNum + 1,
+                        'type' => 'in this line there are change '
+                    );
+                }
+            }
+        }
+
+        return $differences;
+    }
 
     public function makeBackUpFile(FileRequest $request, int $id)
     {
@@ -28,6 +70,40 @@ class BackUpService extends Repo
         $fileProcess = app(FileProcess::class);
         $fileCredentials = $fileProcess->filetrait($data);
         $hash = $this->fileService->getHash($fileCredentials['file_path']);
+        // dd($fileCredentials);
+        $fileType = pathinfo($file['file_name'], PATHINFO_EXTENSION);
+
+        if($fileType == 'txt'){
+                if ($file) {
+                    // dd($file['file_path'],$fileCredentials['file_path']);
+                    $differences = $this->compareFiles($fileCredentials['file_path'], $file['file_path']);
+                    if ($differences) {
+                        $data = $fileProcess->filetraitUpload($file->file_name);
+                        FilesBackUp::create([
+                            'files_id' => $file->id,
+                            'name' => $file->file_name,
+                            'editor_name' => auth()->user()->name,
+                        ]);
+
+                        $res = $file->update([
+                            'file_path' => $fileCredentials['file_path'],
+                            'file_name' => $fileCredentials['file_name'],
+                            'hash' => $hash,
+                        ]);
+
+                        dd($differences);
+                        // here where i should continune right now 
+                        return  $file;
+                } else {
+                    return $file;
+                }
+            } 
+            else {
+                return null;
+            }
+        }
+        
+
         if ($file) {
 
             if ($hash != $file['hash']) {
@@ -44,8 +120,7 @@ class BackUpService extends Repo
                     'hash' => $hash,
                 ]);
 
-                // return $this->apiResponse("File updated", $file, 200);
-                // dd($file);
+               
                 return  $file;
             } else {
                 return $file;

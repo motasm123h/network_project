@@ -18,4 +18,24 @@ class NotiController extends Controller
     {
         return $this->repo->saveFCT($request);
     }
+
+    public function getNotifications()
+    {
+
+        $user = auth()->user();
+
+        $notifications = $user->notifications;
+
+        return response()->json([
+            'data' => $notifications
+        ]);
+    }
+
+    public function deleteNotification($id)
+    {
+        $user = auth()->user()->notifications()->findOrFail($id)->delete();
+        return response()->json([
+            'data' => 'done'
+        ]);
+    }
 }

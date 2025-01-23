@@ -6,15 +6,19 @@ use App\Models\User;
 use App\Models\Groups;
 use Illuminate\Support\Arr;
 use App\Traits\ResponseTrait;
+use App\Repository\Models\Invitation\InvitationService;
 
 class GroupsServices
 {
     private $user;
+    private $invitationService;
+    use ResponseTrait;
+
     public function __construct(User $user)
     {
         $this->user = $user;
+        $this->invitationService = new InvitationService($user);
     }
-    use ResponseTrait;
     private $actions_type = ['join' => '1', 'leave' => '2'];
     public function groupsCheck(Groups $group, int $type, int $userId)
     {
@@ -37,8 +41,11 @@ class GroupsServices
             return ['message' => 'User is already in the group', 'code' => 409];
         }
 
-        $group->users()->attach($userId);
-        return ['message' => 'User joined the group successfully', 'code' => 200];
+
+        $this->invitationService->sendRequest($group);
+        return ['message' => 'User ask to join to the group successfully', 'code' => 200];
+        // $group->users()->attach($userId);
+        // return ['message' => 'User joined the group successfully', 'code' => 200];
     }
 
 

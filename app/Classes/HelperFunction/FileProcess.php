@@ -20,6 +20,9 @@ class FileProcess
             case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
                 $filePath = $file['file']->move(public_path('pptx'), $fileName);
                 break;
+            case 'text/plain':
+                $filePath = $file['file']->move(public_path('text'), $fileName);
+                break;
             default:
                 throw new \Exception("Unsupported file type");
         }
@@ -46,6 +49,10 @@ class FileProcess
             case 'pptx':
                 $sourcePath = public_path('pptx/' . $fileName);
                 break;
+            case 'txt':
+                echo "hihi";
+                $sourcePath = public_path('text/' . $fileName);
+                break;
             default:
                 throw new \Exception("Unsupported file type: $fileType");
         }
@@ -65,7 +72,8 @@ class FileProcess
 
         return [
             'file_name' => $fileName,
-            'file_path' => $destinationPath
+            'file_path' => $destinationPath,
+            'file_type' => $fileType
         ];
     }
 }
